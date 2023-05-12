@@ -25,6 +25,7 @@ package click.isreal.topbar.client;
  ******************************************************************************/
 
 import click.isreal.topbar.Topbar;
+import click.isreal.topbar.domain.DiscordMode;
 import click.isreal.topbar.domain.UserData;
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRichPresence;
@@ -69,7 +70,7 @@ public class DiscordRPC
 
     public void start()
     {
-        doRun = Topbar.getInstance().isDiscordEnabled();
+        doRun = Topbar.getInstance().getDiscordMode() != DiscordMode.OFF;
         if ( doRun )
         {
             timeStampStart = new Timestamp(System.currentTimeMillis()).getTime();
@@ -94,7 +95,7 @@ public class DiscordRPC
     public void stop()
     {
         doRun = false;
-        thread.stop();
+        if(thread != null) thread.stop();
         net.arikia.dev.drpc.DiscordRPC.discordShutdown();
     }
 
@@ -109,7 +110,7 @@ public class DiscordRPC
 
         if ( oldState )
         {
-            String world = Formatting.strip(topbar.buildName(topbar.getWorld()));
+            String world = Formatting.strip(topbar.buildName(topbar.getWorld(), false));
             String state = switch (topbar.getWorld()) {
                 case HUB -> UserData.current().rank();
                 case KFFA -> {
@@ -124,8 +125,11 @@ public class DiscordRPC
                 }
                 default -> "";
             };
+            if(DiscordMode.MINIMAL.isActive()){
+                state = "";
+            }
             DiscordRichPresence.Builder presence = new DiscordRichPresence.Builder(Formatting.strip(state));
-            presence.setDetails(world);
+            if(!DiscordMode.MINIMAL.isActive()) presence.setDetails(world);
             presence.setBigImage("logomp", "Join MixelPixel Discord:\n discord.gg/mixelpixel");
             presence.setStartTimestamps(timeStampStart);
             return presence.build();
@@ -134,7 +138,7 @@ public class DiscordRPC
         {
             DiscordRichPresence.Builder presence = new DiscordRichPresence.Builder("From Yve™ continued by Klysma");
             presence.setDetails("using an MC-Mod ");
-            presence.setBigImage("logolurkklinik", "Visit DonnerPrinzessin @CB-Donner");
+            presence.setBigImage("logolurkklinik", "Muxel-Enhacements Mod");
             presence.setStartTimestamps(timeStampStart);
             return presence.build();
         }
@@ -161,7 +165,9 @@ public class DiscordRPC
         public void interrupt()
         {
             running.set(false);
-            worker.interrupt();
+            if(this.worker != null) {
+                worker.interrupt();
+            }
         }
 
         public void run()

@@ -1,5 +1,7 @@
 package click.isreal.topbar.domain;
 
+import click.isreal.topbar.Topbar;
+import click.isreal.topbar.client.TopbarClient;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,6 +26,11 @@ public enum MixelWorld {
     BIG_DONNER(MixelWorldType.BIG_CB, "Donner", Formatting.WHITE),
     EVENT(MixelWorldType.EVENT, "", Formatting.WHITE),
     OTHER(MixelWorldType.OTHER, "", Formatting.RED);
+
+    public static boolean inWorld(){
+        return TopbarClient.getInstance().isMixelPixel() &&
+                TopbarClient.getInstance().getWorld() != MixelWorld.OTHER;
+    }
 
     public static MixelWorld findWorld(String text){
         if(StringUtils.isBlank(text)) return OTHER;

@@ -1,6 +1,5 @@
 package click.isreal.topbar.domain;
 
-import click.isreal.topbar.client.TopbarClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -9,8 +8,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class UserData {
+
+    private static final UserData data;
+
+    static {
+        data = new UserData(MixelWorld.OTHER);
+        try {
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
     public static UserData current(){
-        return TopbarClient.getInstance().getScoreboardData();
+        return data;
     }
     MixelWorld mixelWorld;
     @Nullable String dimension;
@@ -23,7 +32,7 @@ public class UserData {
     @Nullable String aufstiegPoints;
     @Nullable String kffaMap;
     @Nullable String kffaMapSwitch;
-    private Map<Class<?>, Object> injections = new HashMap<>();
+    private final Map<Class<?>, Object> injections = new HashMap<>();
     public UserData(MixelWorld world) {
         this.mixelWorld = world;
     }
@@ -127,8 +136,9 @@ public class UserData {
         return this;
     }
 
+    @Nullable
     public <T> T getInjection(Class<T> classType){
-        return (T) this.injections.get(classType);
+        return (T) this.injections.getOrDefault(classType, null);
     }
 
     public <T> String readSafeString(Class<T> classType, Function<T, String> f){

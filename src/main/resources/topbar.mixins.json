@@ -5,7 +5,9 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "InGameHudMixin",
-    "ScoreboardMixins"
+    "ScoreboardMixins",
+    "ClientNetworkMixin",
+    "ItemFrameTracerMixin"
   ],
   "client": [
     "BossBarHudMixin",
@@ -17,7 +19,10 @@
     "ScreenMixin",
     "SplashScreenMixin",
     "UnsecureServerToastMixin",
-    "HornDisableMixin"
+    "HornDisableMixin",
+    "BlockFalseCommandMixin",
+    "ScreenHandlerMixin",
+    "ItemFrameTracerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -25,6 +25,7 @@ package click.isreal.topbar;
  ******************************************************************************/
 
 import click.isreal.topbar.client.TopbarClient;
+import click.isreal.topbar.domain.DiscordMode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.api.ModInitializer;
@@ -38,11 +39,12 @@ import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Objects;
 
 public class Topbar implements ModInitializer
 {
 
-    public static final Logger LOGGER = LogManager.getFormatterLogger("YVE/Topbar");
+    public static final Logger LOGGER = LogManager.getFormatterLogger("Muxel-Enhancements");
     private static Topbar instance;
     private final Gson configJson;
     private final String configPath = FabricLoader.getInstance().getConfigDir().resolve("YveTopbar" + ".json").toString();
@@ -88,7 +90,7 @@ public class Topbar implements ModInitializer
         {
             LOGGER.log(Level.WARN, "Could not save config file. Exception: " + e.getMessage());
         }
-        TopbarClient.getInstance().updateTopBar();
+        TopbarClient.getInstance().updateTopBar(null);
     }
 
     public void loadConfig()
@@ -104,6 +106,14 @@ public class Topbar implements ModInitializer
         }
     }
 
+    public boolean isTopbar(){
+        return config.topbar != 0;
+    }
+
+    public void setTopbar(boolean topbar){
+        config.topbar = topbar ? 1 : 0;
+    }
+
     public boolean isStreamerMode()
     {
         return config.streamerMode != 0;
@@ -112,7 +122,6 @@ public class Topbar implements ModInitializer
     public void setStreamerMode( boolean streamerMode )
     {
         config.streamerMode = streamerMode ? 1 : 0;
-        saveConfig();
     }
 
     public int getColorBackground()
@@ -123,40 +132,6 @@ public class Topbar implements ModInitializer
     public void setColorBackground( int colorBackground )
     {
         config.colorBackground = colorBackground;
-        saveConfig();
-    }
-
-    public int getEffectIconSize()
-    {
-        return Math.min(32, Math.max(6, config.effectIconSize));
-    }
-
-    public void setEffectIconSize( int effectIconSize )
-    {
-        config.effectIconSize = Math.min(32, Math.max(6, effectIconSize));
-        saveConfig();
-    }
-
-    public int getEffectColorPositive()
-    {
-        return config.effectColorPositive;
-    }
-
-    public void setEffectColorPositive( int color )
-    {
-        config.effectColorPositive = color;
-        saveConfig();
-    }
-
-    public int getEffectColorNegative()
-    {
-        return config.effectColorNegative;
-    }
-
-    public void setEffectColorNegative( int color )
-    {
-        config.effectColorNegative = color;
-        saveConfig();
     }
 
     public boolean isFpsShow()
@@ -167,7 +142,6 @@ public class Topbar implements ModInitializer
     public void setFpsShow( boolean FpsShow )
     {
         config.fpsShow = FpsShow ? 1 : 0;
-        saveConfig();
     }
 
     public int getFpsColor()
@@ -178,7 +152,6 @@ public class Topbar implements ModInitializer
     public void setFpsColor( int fpsColor )
     {
         config.fpsColor = fpsColor;
-        saveConfig();
     }
 
     public boolean isTimeShow()
@@ -189,7 +162,6 @@ public class Topbar implements ModInitializer
     public void setTimeShow( boolean timeShow )
     {
         config.timeShow = timeShow ? 1 : 0;
-        saveConfig();
     }
 
     public int getTimeColor()
@@ -200,7 +172,6 @@ public class Topbar implements ModInitializer
     public void setTimeColor( int timeColor )
     {
         config.timeColor = timeColor;
-        saveConfig();
     }
 
     public boolean isPreventFalseCommands()
@@ -211,7 +182,6 @@ public class Topbar implements ModInitializer
     public void setPreventFalseCommands( boolean preventFalseCommands )
     {
         config.preventFalseCommands = preventFalseCommands ? 1 : 0;
-        saveConfig();
     }
 
     public int getLoadscreenColor()
@@ -222,26 +192,19 @@ public class Topbar implements ModInitializer
     public void setLoadscreenColor( int loadscreenColor )
     {
         config.loadscreenColor = loadscreenColor;
-        saveConfig();
     }
 
-    public boolean isDiscordEnabled()
-    {
-        return config.discordEnabled != 0;
+    public DiscordMode getDiscordMode(){
+        return DiscordMode.valueOf(this.config.discordMode);
     }
 
-    public void setDiscordEnabled( boolean discordEnabled )
-    {
-        config.discordEnabled = discordEnabled ? 1 : 0;
-        if ( discordEnabled )
-        {
-            TopbarClient.getInstance().dc.start();
-        }
-        else
-        {
+    public void setDiscordMode(DiscordMode mode){
+        DiscordMode current = getDiscordMode();
+        if(mode == DiscordMode.OFF)
             TopbarClient.getInstance().dc.stop();
-        }
-        saveConfig();
+        this.config.discordMode = mode.name();
+        if(current == DiscordMode.OFF && mode != DiscordMode.OFF)
+            TopbarClient.getInstance().dc.start();
     }
 
     public boolean isBreakwarnEnabled()
@@ -252,7 +215,6 @@ public class Topbar implements ModInitializer
     public void setBreakwarnEnabled( boolean breakwarnEnabled )
     {
         config.breakwarnEnabled = breakwarnEnabled ? 1 : 0;
-        saveConfig();
     }
 
     public boolean unsecureServerWarning(){
@@ -261,7 +223,6 @@ public class Topbar implements ModInitializer
 
     public void setUnsecureServerWarning( boolean secureServerWarning ){
         this.config.unsecureServerWarning =  secureServerWarning ? 1 : 0;
-        saveConfig();
     }
 
     public boolean hornAudio(){
@@ -270,7 +231,14 @@ public class Topbar implements ModInitializer
 
     public void setHornAudio( boolean hornAudio ){
         this.config.hornAudio =  hornAudio ? 1 : 0;
-        saveConfig();
+    }
+
+    public boolean showLookingAt(){
+        return config.showLookingAt != 0;
+    }
+
+    public void setLookingAt( boolean lookingAt ){
+        this.config.showLookingAt =  lookingAt ? 1 : 0;
     }
 
 }

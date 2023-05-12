@@ -150,6 +150,6 @@ public abstract class MinecraftClientMixin
     public void joinWorld( ClientWorld world, final CallbackInfo callbackInfo )
     {
         Topbar.LOGGER.warn("WORLD CHANGED TO: " + world.getDimension().toString());
-        TopbarClient.getInstance().updateTopBar();
+        TopbarClient.getInstance().updateTopBar(null);
     }
 }
