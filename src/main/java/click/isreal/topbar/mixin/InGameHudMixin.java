@@ -36,34 +36,23 @@ import com.ibm.icu.util.Calendar;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.advancement.AdvancementDisplay;
-import net.minecraft.advancement.AdvancementFrame;
-import net.minecraft.advancement.criterion.BeeNestDestroyedCriterion;
-import net.minecraft.block.BeehiveBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.StatusEffectSpriteManager;
-import net.minecraft.client.toast.Toast;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
 import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -72,6 +61,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -83,9 +73,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-
-import static net.fabricmc.fabric.api.client.screen.v1.Screens.getItemRenderer;
 
 
 @Environment(EnvType.CLIENT)
@@ -111,7 +98,7 @@ public abstract class InGameHudMixin extends DrawableHelper {
 
     @Nullable
     private String currentFacingInfo;
-    private final Item air = Registries.ITEM.get(new Identifier("minecraft", "air"));
+    private final Item air = Registry.ITEM.get(new Identifier("minecraft", "air"));
 
     @Inject(method = "renderStatusEffectOverlay", at = @At("HEAD"), cancellable = true)
     public void renderStatusEffectOverlay(MatrixStack matrices, final CallbackInfo ci) {
@@ -165,7 +152,7 @@ public abstract class InGameHudMixin extends DrawableHelper {
                         int finalK = k;
                         int finalL = l;
                         list.add(() -> {
-                            RenderSystem.setShaderTexture(0, sprite.getAtlasId());
+                            RenderSystem.setShaderTexture(0, sprite.getAtlas().getId());
                             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, f);
                             drawSprite(matrices, finalK + 3, finalL + 3, this.getZOffset(), 18, 18, sprite);
                         });
