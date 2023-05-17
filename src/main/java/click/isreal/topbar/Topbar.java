@@ -24,8 +24,8 @@ package click.isreal.topbar;
  * SOFTWARE.
  ******************************************************************************/
 
-import click.isreal.topbar.client.TopbarClient;
-import click.isreal.topbar.domain.DiscordMode;
+import com.arematics.enhancements.client.Client;
+import com.arematics.enhancements.domain.DiscordMode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.api.ModInitializer;
@@ -39,7 +39,6 @@ import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.Objects;
 
 public class Topbar implements ModInitializer
 {
@@ -47,6 +46,7 @@ public class Topbar implements ModInitializer
     public static final Logger LOGGER = LogManager.getFormatterLogger("Muxel-Enhancements");
     private static Topbar instance;
     private final Gson configJson;
+    public static final boolean BACKPACK_TRACE = true;
     private final String configPath = FabricLoader.getInstance().getConfigDir().resolve("YveTopbar" + ".json").toString();
     public DecimalFormat moneyformat = new DecimalFormat("###,###,###.00 ⛀", new DecimalFormatSymbols(Locale.GERMANY));
     private ModConfig config = new ModConfig();
@@ -90,7 +90,7 @@ public class Topbar implements ModInitializer
         {
             LOGGER.log(Level.WARN, "Could not save config file. Exception: " + e.getMessage());
         }
-        TopbarClient.getInstance().updateTopBar(null);
+        Client.getInstance().updateTopBar(null);
     }
 
     public void loadConfig()
@@ -201,10 +201,10 @@ public class Topbar implements ModInitializer
     public void setDiscordMode(DiscordMode mode){
         DiscordMode current = getDiscordMode();
         if(mode == DiscordMode.OFF)
-            TopbarClient.getInstance().dc.stop();
+            Client.getInstance().dc.stop();
         this.config.discordMode = mode.name();
         if(current == DiscordMode.OFF && mode != DiscordMode.OFF)
-            TopbarClient.getInstance().dc.start();
+            Client.getInstance().dc.start();
     }
 
     public boolean isBreakwarnEnabled()

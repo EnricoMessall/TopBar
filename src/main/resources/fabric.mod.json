@@ -4,14 +4,14 @@
   "version": "${version}",
   "name": "Muxel-Enhancements",
   "description": "Enhancements Mod for improved functionality especially for the mixelpixel minecraft server. This mod has no association to the Mixelpixel Gbr itself and is not officially supported by Mixelpixel",
-  "authors": ["Klysma", "Yve"],
+  "authors": ["Enrico", "Yve"],
   "contact": {},
   "license": "MIT",
   "icon": "assets/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "click.isreal.topbar.client.TopbarClient"
+      "com.arematics.enhancements.client.Client"
     ],
     "main": [
       "click.isreal.topbar.Topbar"

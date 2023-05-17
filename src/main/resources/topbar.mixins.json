@@ -1,13 +1,11 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "click.isreal.topbar.mixin",
+  "package": "com.arematics.enhancements.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "InGameHudMixin",
-    "ScoreboardMixins",
-    "ClientNetworkMixin",
-    "ItemFrameTracerMixin"
+    "ScoreboardMixins"
   ],
   "client": [
     "BossBarHudMixin",
@@ -21,8 +19,7 @@
     "UnsecureServerToastMixin",
     "HornDisableMixin",
     "BlockFalseCommandMixin",
-    "ScreenHandlerMixin",
-    "ItemFrameTracerMixin"
+    "ScreenHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
