@@ -63,6 +63,10 @@ public class CitybuildMapper implements ScoreboardMapping {
             UserData.current().setCbPlotOwner(player.replaceAll("§0§[4-9]§f  §8► ", ""));
         }
 
+        if(player.contains("%§8]")){
+            UserData.current().setJubiProgress(player);
+        }
+
         if(player.contains("§0§6§f  §e§owww.MixelPixel.net")){
             UserData.current().setCbPlotName(null);
             UserData.current().setCbPlotOwner(null);

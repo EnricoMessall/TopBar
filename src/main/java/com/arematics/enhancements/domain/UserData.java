@@ -155,6 +155,14 @@ public class UserData {
         return this;
     }
 
+    public void setJubiProgress(String jubiProgress) {
+        this.jubiProgress = jubiProgress;
+    }
+
+    public @Nullable String getJubiProgress() {
+        return jubiProgress;
+    }
+
     @Nullable
     public <T> T getInjection(Class<T> classType){
         return (T) this.injections.getOrDefault(classType, null);
