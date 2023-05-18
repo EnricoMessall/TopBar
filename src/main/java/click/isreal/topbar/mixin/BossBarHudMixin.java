@@ -24,6 +24,7 @@ package click.isreal.topbar.mixin;
  * SOFTWARE.
  ******************************************************************************/
 
+import click.isreal.topbar.Topbar;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
@@ -65,7 +66,7 @@ public class BossBarHudMixin
     public void render(MatrixStack matrices, CallbackInfo callbackInfo) {
         if (!this.bossBars.isEmpty()) {
             int i = this.client.getWindow().getScaledWidth();
-            int j = 24;
+            int j = Topbar.getInstance().isTopbar() ? 24 : 12;
             Iterator var4 = this.bossBars.values().iterator();
 
             while(var4.hasNext()) {
@@ -80,7 +81,7 @@ public class BossBarHudMixin
                 int o = j - 9;
                 this.client.textRenderer.drawWithShadow(matrices, text, (float)n, (float)o, 16777215);
                 Objects.requireNonNull(this.client.textRenderer);
-                j += 22 + 9;
+                j += (Topbar.getInstance().isTopbar() ? 20 : 10) + 9;
                 if (j >= this.client.getWindow().getScaledHeight() / 3) {
                     break;
                 }

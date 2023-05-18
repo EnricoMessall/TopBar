@@ -1,5 +1,7 @@
 package click.isreal.topbar;
 
+import click.isreal.topbar.domain.DiscordMode;
+
 /*******************************************************************************
  * MIT License
  *
@@ -28,19 +30,18 @@ public class ModConfig
 {
     // we are using int instead of boolean, where 0 means FALSE, anything else TRUE
     // because of GSON can't handle booleans on it's on correctly
+    public int topbar = 1;
     public int streamerMode = 0;
     public int colorBackground = 0xff000000;
-    public int effectIconSize = 10;
-    public int effectColorPositive = 0xff00ff00;
-    public int effectColorNegative = 0xffff0000;
     public int fpsShow = 1;
     public int fpsColor = 0xff808080;
     public int timeShow = 1;
     public int timeColor = 0xffff007D;
     public int preventFalseCommands = 0;
     public int loadscreenColor = 0xffff007D;
-    public int discordEnabled = 1;
+    public String discordMode = DiscordMode.FULL.name();
     public int breakwarnEnabled = 1;
     public int unsecureServerWarning = 0;
     public int hornAudio = 0;
+    public int showLookingAt = 1;
 }

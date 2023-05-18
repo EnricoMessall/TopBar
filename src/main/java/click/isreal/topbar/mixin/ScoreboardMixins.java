@@ -27,13 +27,16 @@ package click.isreal.topbar.mixin;
 import click.isreal.topbar.Topbar;
 import click.isreal.topbar.client.TopbarClient;
 import click.isreal.topbar.domain.MixelWorld;
+import click.isreal.topbar.domain.ScoreboardUpdate;
 import click.isreal.topbar.domain.UserData;
 import click.isreal.topbar.domain.Winter22Event;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ScoreboardPlayerScore;
+import net.minecraft.scoreboard.Team;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,6 +46,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
 import java.util.Map;
 
 @Environment( EnvType.CLIENT )
@@ -63,14 +67,8 @@ public class ScoreboardMixins
     {
         String text = stripStr(player).trim();
         String displayName = objective.getDisplayName().getString().trim();
-
         if ( displayName.matches(".*KnockbackFFA.*") )
         {
-            String trimmedName = displayName
-                    .replaceAll("-[0-9]", "").replaceAll("[^0-9\\:]", "");
-            TopbarClient.getInstance().getScoreboardData()
-                    .setMixelWorld(MixelWorld.KFFA)
-                    .setKffaMapSwitch(Formatting.DARK_AQUA + " [" + trimmedName + "]");
             if ( text.matches("(.*)Map:(.*)") )
             {
                 String map = Formatting.YELLOW + text.replaceAll("Map:", "").trim();
@@ -109,11 +107,6 @@ public class ScoreboardMixins
         }
         else if ( displayName.matches("(.*)CityBuild(.*)") )
         {
-            MixelWorld world = MixelWorld.findWorld(text);
-            if(world != MixelWorld.OTHER){
-                UserData.current().setMixelWorld(world);
-                return;
-            }
             if ( text.matches("(.*) ⛀(.*)") )
             {
                 String tmpMoney = text.replaceAll("[^0-9,]", "").replaceAll(",", ".");
@@ -124,17 +117,20 @@ public class ScoreboardMixins
                     UserData.current().setMoney(Formatting.GOLD + "<Versteckt>");
                 }
             }
-/*
+
             else if ( player.matches("§0§([4-9])§f §8• (.*)") )
             {
-                // plotname
-                ScoreboardData.current().setCbPlotName(player.replaceAll("§0§[4-9]§f §8• ", ""));
+                UserData.current().setCbPlotName(player.replaceAll("§0§[4-9]§f §8• ", ""));
             }
             else if ( player.matches("§0§[4-9]§f  §8(.*)") )
             {
-                // plotowner
-                ScoreboardData.current().setCbPlotOwner(player.replaceAll("§0§[4-9]§f  §8► ", ""));
-            }*/
+                UserData.current().setCbPlotOwner(player.replaceAll("§0§[4-9]§f  §8► ", ""));
+            }
+
+            if(player.contains("§0§6§f  §e§owww.MixelPixel.net")){
+                UserData.current().setCbPlotName(null);
+                UserData.current().setCbPlotOwner(null);
+            }
         }else if( text.matches(".*Lobby.*") ) {
             UserData.current().setMixelWorld(MixelWorld.HUB);
         }
@@ -144,7 +140,8 @@ public class ScoreboardMixins
             UserData.current().setRank(rank);
         }
 
-        if(displayName.matches("(.*)Winterevent(.*)")) {
+        if(UserData.current().getInjection(Winter22Event.class) != null &&
+                displayName.matches("(.*)Winterevent(.*)")) {
             if (text.matches("(.*)Türchen:(.*)")) {
                 String tuer = Formatting.YELLOW + text.replaceAll("• Türchen:", "").trim();
                 UserData.current().getInjection(Winter22Event.class).setTuer(tuer);
@@ -158,18 +155,8 @@ public class ScoreboardMixins
         }else{
             UserData.current().updateIfExists(Winter22Event.class, (i) -> i.setTuer(null).setModus(null).setCheckpoints(null));
         }
-/*    else
-    {
-      Topbar.getInstance().log.log(Level.WARN, "Scoreboard->getPlayerScore =>\n"
-              + " -> Player: "      + stripStr(player) + "\n"
-              + " -> Name: "        + objective.getName() + "\n"
-              + " -> DisplayName: " + objective.getDisplayName().getString() + "\n"
-              + " -> RenderType: "  + objective.getRenderType().getName() + "\n"
-              + " -> Criterion: "   + objective.getCriterion().getName() + "\n\n"
-      );
-    }
-*/
-        TopbarClient.getInstance().updateTopBar();
+        ScoreboardUpdate update = new ScoreboardUpdate(displayName, player, text);
+        TopbarClient.getInstance().updateTopBar(update);
     }
 
     @Inject( method = "getPlayerScore", at = @At( "HEAD" ) )

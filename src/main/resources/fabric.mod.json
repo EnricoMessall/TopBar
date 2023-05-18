@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "topbar",
+  "id": "muxel-enhancements",
   "version": "${version}",
-  "name": "Yve-Topbar",
-  "description": "Replaces the scoreboard on mixelpixel.net in the most cases with a beautiful and simple bar on the top of the screen. ",
-  "authors": ["Yve"],
+  "name": "Muxel-Enhancements",
+  "description": "Enhancements Mod for improved functionality especially for the mixelpixel minecraft server. This mod has no association to the Mixelpixel Gbr itself and is not officially supported by Mixelpixel",
+  "authors": ["Klysma", "Yve"],
   "contact": {},
   "license": "MIT",
   "icon": "assets/icon.png",
@@ -24,9 +24,9 @@
     "topbar.mixins.json"
   ],
   "depends": {
-    "cloth-config2": ">=9.0.94",
+    "cloth-config2": ">=8.2.88",
     "fabricloader": ">=0.14.11",
     "fabric": "*",
-    "minecraft": ">=1.19.3"
+    "minecraft": ">=1.19.2"
   }
 }
