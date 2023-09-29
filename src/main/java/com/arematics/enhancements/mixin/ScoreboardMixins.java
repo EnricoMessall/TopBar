@@ -79,10 +79,7 @@ public class ScoreboardMixins
     @Inject( method = "getPlayerScore", at = @At( "HEAD" ) )
     public void getPlayerScore( String player, ScoreboardObjective objective, CallbackInfoReturnable<ScoreboardPlayerScore> infoReturnable )
     {
-        if ( player.length() <= 40 )
-        {
-            updateObjective(player, objective);
-        }
+        updateObjective(player, objective);
     }
 
     @Inject( method = "updateExistingObjective", at = @At( "HEAD" ) )

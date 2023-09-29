@@ -26,8 +26,10 @@ package com.arematics.enhancements.client;
 
 import click.isreal.topbar.Topbar;
 import com.arematics.enhancements.domain.*;
+import com.arematics.enhancements.domain.shops.ShopDataCache;
 import com.arematics.enhancements.events.InventoryOpenEvent;
 import com.arematics.enhancements.events.MixelJoinCallback;
+import com.arematics.enhancements.jobs.JobInventoryDataLogger;
 import com.arematics.enhancements.scoreboard.mappers.CitybuildMapper;
 import com.arematics.enhancements.scoreboard.mappers.KffaMapper;
 import net.fabricmc.api.ClientModInitializer;
@@ -46,6 +48,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -102,8 +105,16 @@ public class Client implements ClientModInitializer
     }
 
     private void initEventCallbacks(){
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> setIsMuxel(false));
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            setIsMuxel(false);
+            try {
+                ShopDataCache.getInstance().export();
+            } catch (IOException e) {
+                Topbar.LOGGER.warn("failed to export data: " + e.getMessage());
+            }
+        });
         ClientPlayConnectionEvents.INIT.register(new MixelJoinCallback());
+        inventories().register(new JobInventoryDataLogger());
         addScoreboardMapping(new CitybuildMapper());
         addScoreboardMapping(new KffaMapper());
     }
@@ -215,15 +226,6 @@ public class Client implements ClientModInitializer
                 default -> strTopRight = Formatting.RED + "?"; // at this moment we don't know what to do ;-)
             }
         }
-    }
-
-    @Nullable
-    public ImprovedSignEntity toSign(BlockPos blockPos){
-        ImprovedClientWorld world = world();
-        if(world.world() == null) return null;
-        BlockState state = world.world().getBlockState(blockPos);
-        BlockEntity entity = world.world().getBlockEntity(blockPos);
-        return null;
     }
 
     @NotNull

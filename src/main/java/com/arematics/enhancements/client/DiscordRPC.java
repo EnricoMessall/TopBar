@@ -107,9 +107,9 @@ public class DiscordRPC
             oldState = !oldState;
         }
         if(!topbar.isMuxelPixel()) oldState = false;
-
         if ( oldState )
         {
+            boolean minimal = DiscordMode.MINIMAL.isActive() || Topbar.getInstance().isStreamerMode();
             String world = Formatting.strip(topbar.buildName(topbar.getWorld(), false));
             String state = switch (topbar.getWorld()) {
                 case HUB -> UserData.current().rank();
@@ -125,11 +125,11 @@ public class DiscordRPC
                 }
                 default -> "";
             };
-            if(DiscordMode.MINIMAL.isActive()){
+            if(minimal){
                 state = "";
             }
             DiscordRichPresence.Builder presence = new DiscordRichPresence.Builder(Formatting.strip(state));
-            if(!DiscordMode.MINIMAL.isActive()) presence.setDetails(world);
+            if(!minimal) presence.setDetails(world);
             presence.setBigImage("logomp", "Join MixelPixel Discord:\n discord.gg/mixelpixel");
             presence.setStartTimestamps(timeStampStart);
             return presence.build();

@@ -22,17 +22,25 @@
  *   SOFTWARE.
  */
 
-package com.arematics.enhancements.domain;
+package com.arematics.enhancements.domain.shops;
 
-import net.minecraft.block.entity.SignBlockEntity;
+import org.jetbrains.annotations.NotNull;
 
-public class ImprovedSignEntity {
-    private final SignBlockEntity entity;
-    public ImprovedSignEntity(SignBlockEntity entity){
-        this.entity = entity;
+import java.util.List;
+import java.util.Objects;
+
+public record Shop(@NotNull String shopName, @NotNull List<ShopItem> items) {
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Shop shop = (Shop) o;
+        return Objects.equals(shopName, shop.shopName) && Objects.equals(items, shop.items);
     }
 
-    public SignBlockEntity entity() {
-        return entity;
+    @Override
+    public int hashCode() {
+        return Objects.hash(shopName);
     }
 }

@@ -26,8 +26,13 @@ package com.arematics.enhancements.mixin;
 
 import click.isreal.topbar.Topbar;
 import com.arematics.enhancements.client.Client;
+import com.arematics.enhancements.domain.ImprovedClientWorld;
+import com.arematics.enhancements.domain.ImprovedSign;
 import com.arematics.enhancements.domain.MuxelWorld;
 import com.arematics.enhancements.domain.UserData;
+import com.arematics.enhancements.domain.shops.Shop;
+import com.arematics.enhancements.domain.shops.ShopDataCache;
+import com.arematics.enhancements.domain.shops.ShopItem;
 import com.arematics.enhancements.util.ItemHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
@@ -59,6 +64,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SignItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -111,9 +117,12 @@ public abstract class InGameHudMixin extends DrawableHelper {
     @Nullable
     private ItemFrameEntity currentItemFrame;
 
+    private final ShopDataCache cache = ShopDataCache.getInstance();
+
     @Nullable
     private String currentFacingInfo;
     private final Item air = Registries.ITEM.get(new Identifier("minecraft", "air"));
+    private final Item itemFrame = Registries.ITEM.get(new Identifier("minecraft", "item_frame"));
 
     @Inject(method = "renderStatusEffectOverlay", at = @At("HEAD"), cancellable = true)
     public void renderStatusEffectOverlay(MatrixStack matrices, final CallbackInfo ci) {
@@ -225,6 +234,7 @@ public abstract class InGameHudMixin extends DrawableHelper {
 
     @Inject(method = {"render"}, at = {@At("TAIL")})
     public void render(MatrixStack matrices, float tickDelta, final CallbackInfo ci) {
+        extractShopData();
         if (Topbar.getInstance().showLookingAt()) {
             HitResult result = Client.getInstance().watchingAt();
             ItemFrameEntity entity = Client.getInstance().target(ItemFrameEntity.class);
@@ -242,20 +252,7 @@ public abstract class InGameHudMixin extends DrawableHelper {
                 BlockState state = this.client.world.getBlockState(blockPos);
                 BlockEntity entityblock = client.world.getBlockEntity(blockPos);
                 if (state != null && !state.getBlock().asItem().getDefaultStack().copy().isOf(air)) {
-                    ItemStack facing = state.getBlock().asItem().getDefaultStack().copy();
-                    if(ItemHelper.matches(facing, "sign")){
-                        List<Entity> entities = client.world.getOtherEntities(null, new Box(blockPos, blockPos.up()), (e) -> e instanceof ItemFrameEntity);
-                        if(entities.size() > 0){
-                            this.currentFacing = null;
-                            this.currentFacingInfo = "";
-                            ItemFrameEntity itemFrameEntity = (ItemFrameEntity) entities.get(0);
-                            this.currentItemFrame = itemFrameEntity;
-                        }else{
-                            this.currentFacing = facing;
-                        }
-                    }else{
-                        this.currentFacing = facing;
-                    }
+                    this.currentFacing = state.getBlock().asItem().getDefaultStack().copy();
                     if (entityblock instanceof BeehiveBlockEntity bbe) {
                         this.currentFacingInfo = "Bienen: " + bbe.getBees().size();
                     } else this.currentFacingInfo = "";
@@ -274,83 +271,41 @@ public abstract class InGameHudMixin extends DrawableHelper {
     }
 
     private void renderLookingAt(MatrixStack matrices) {
-        renderItemStack(this.currentFacing, matrices);
+        renderItemStack(this.currentFacing, matrices, this.currentFacingInfo);
     }
 
-    private void renderItemStack(ItemStack itemStack, MatrixStack matrices){
+    private void renderItemStack(ItemStack itemStack, MatrixStack matrices, String... lines){
         if(itemStack != null && !itemStack.isOf(air)){
-            getTextRenderer().draw(matrices, currentFacing.getName(), 30.0F, 20, 0xfff0f0f0);
-            if (this.currentFacingInfo != null) {
-                Text info = Text.literal(this.currentFacingInfo);
-                List<OrderedText> list = client.textRenderer.wrapLines(info, 100);
-                if (list.size() == 1) {
-                    getTextRenderer().draw(matrices, list.get(0), 30.0F, 32, 0xfff0f0f0);
-                } else {
-                    int var10000 = 32 / 2;
-                    int var10001 = list.size();
-                    int l = var10000 - var10001 * 9 / 2;
-
-                    for (Iterator var12 = list.iterator(); var12.hasNext(); l += 9) {
-                        OrderedText orderedText = (OrderedText) var12.next();
-                        this.getTextRenderer().draw(matrices, orderedText, 30.0F, (float) l, 0xfff0f0f0);
-                    }
+            getTextRenderer().draw(matrices, itemStack.getName().getString(), 30.0F, 20, 0xfff0f0f0);
+            int begin = 32;
+            for(String line: lines){
+                if(line != null) {
+                    getTextRenderer().draw(matrices, line, 30.0F, begin, 0xfff0f0f0);
+                    begin += 12;
                 }
             }
-
-            itemRenderer.renderInGui(this.currentFacing, 7, 16);
+            itemRenderer.renderInGui(itemStack, 7, 16);
         }
     }
 
     private void renderCurrentItemFrame(ItemFrameEntity ife, MatrixStack matrices){
         ItemStack item = ife.getHeldItemStack();
         if (!item.isOf(air)) {
-            List<String> lines = new ArrayList<>();
-            if(ItemHelper.matches(item, "enchanted_book")){
-                NbtList enchantments = EnchantedBookItem.getEnchantmentNbt(item);
-                if(enchantments != null && enchantments.size() > 0) {
-                    try{
-                        NbtCompound nbtItem = enchantments.getCompound(0);
-                        Identifier enchantmentId = Identifier.tryParse(nbtItem.getString("id"));
-                        Short level = nbtItem.getShort("lvl");
-                        if(enchantmentId != null){
-                            Enchantment enchantment = Registries.ENCHANTMENT.get(enchantmentId);
-                            if(enchantment != null){
-                                lines.add(enchantment.getName(level).getString());
-                            }
-                        }
-                    }catch (Exception ignore){}
-                }
-            }
-            if(lines.size() == 0) lines.add(item.getName().getString());
-            BlockPos down = ife.getBlockPos().down();
-            BlockState state = this.client.world.getBlockState(down);
-            BlockEntity entity = client.world.getBlockEntity(down);
-            if (state != null && entity != null) {
-                Item i = state.getBlock().asItem();
-                if (ItemHelper.matches(i, "sign")) {
-                    if (entity instanceof SignBlockEntity sbe) {
-                        Text isShop = sbe.getTextOnRow(0, false);
-                        if(isShop != null && isShop.toString().contains("color=red")){
-                            lines.add(Formatting.RED + "Ausverkauft");
-                        }else {
-                            Text kaufen = sbe.getTextOnRow(2, false);
-                            Text aText = sbe.getTextOnRow(3, false);
-                            if ((isShop != null && isShop.getString().contains("Usershop")) &&
-                                    kaufen != null && aText != null) {
-                                String k = kaufen.getString();
-                                String a = aText.getString();
-                                if (k.contains("Stück")) {
-                                    k = k.replaceAll(" Stück", "");
-                                    lines.add(k + "x kaufen für " + a);
-                                }
-                            }
-                        }
+            ImprovedSign sign = Client.getInstance().world().sign(ife.getBlockPos().down());
+            if (sign != null) {
+                ShopItem shopItem = sign.toMixelShopItem(item);
+                if(shopItem != null){
+                    if(shopItem.empty()){
+                        renderItemFrameLookingAt(ife, matrices, shopItem.displayName(), Formatting.RED + "Ausverkauft");
+                    }else{
+                        String name = shopItem.bookEnchantment() != null ? shopItem.bookEnchantment() : shopItem.displayName();
+                        String kaufen = shopItem.amount() + "x kaufen für " + shopItem.price() + " ⛀";
+                        renderItemFrameLookingAt(ife, matrices, name, kaufen);
                     }
                 }
             }
-            renderItemFrameLookingAt(ife, matrices, lines.toArray(new String[]{}));
         }else{
-            renderItemStack(Registries.ITEM.get(Identifier.of("minecraft", "item_framce")).getDefaultStack(), matrices);
+            renderItemStack(itemFrame.getDefaultStack(), matrices);
         }
     }
 
@@ -362,6 +317,26 @@ public abstract class InGameHudMixin extends DrawableHelper {
                 begin += 12;
             }
             itemRenderer.renderInGui(entity.getHeldItemStack(), 7, 16);
+        }
+    }
+
+    private void extractShopData(){
+        ImprovedClientWorld world = Client.getInstance().world();
+        world.getNearPlayer(ItemFrameEntity.class)
+                .forEach(this::addItemToCache);
+    }
+
+    private void addItemToCache(ItemFrameEntity ife){
+        ItemStack item = ife.getHeldItemStack();
+        if(item == null) return;
+        ImprovedSign sign = Client.getInstance().world().sign(ife.getBlockPos().down());
+        if (sign != null) {
+            ShopItem shopItem =  sign.toMixelShopItem(item);
+            if(shopItem != null){
+                String shopName = sign.getText(1);
+                Shop shop = new Shop(shopName, new ArrayList<>());
+                cache.addItem(shop, shopItem);
+            }
         }
     }
 }
